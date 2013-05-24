@@ -143,6 +143,15 @@ class db extends stdClass {
 		return mysql_query($str, $this->conn);
 	}
 
+	// Get columns from table (select only)
+	public function columns($args=false) {
+		if($args) {
+			$sql = "SHOW COLUMNS FROM " . (strstr($args, '`') ? $args : '`' . $args . '`');
+			return $this->assoc($sql);
+		}
+		return false;
+	}
+
 	// From tables (select only)
 	public function from($args=false, $moreargs=false) {
 		if(self::$select->columns) {
