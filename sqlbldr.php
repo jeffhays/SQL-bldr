@@ -476,7 +476,7 @@ class db extends stdClass {
 		}
 	}
 
-// Legacy functions
+// Global utility functions
 
 	// Run query and return associative array
 	public function assoc($str) {
@@ -489,6 +489,14 @@ class db extends stdClass {
 		}
 		return $assoc;
 	}
-
-// End legacy functions
+	public function obj($str) {
+		$res = $this->query($str);
+		$obj = false;
+		if($res && mysql_num_rows($res) > 0) {
+			while($row = mysql_fetch_object($res)) {
+				$obj[] = $row;
+			}
+		}
+		return $obj;
+	}
 }
