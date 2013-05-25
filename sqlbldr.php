@@ -17,6 +17,7 @@ class db extends stdClass {
 	private $table = false;
 	private $columns = false;
 	private $values = false;
+	private $join = false;
 	private $where = false;
 	private $order = false;
 	private $sql = false;
@@ -41,9 +42,9 @@ class db extends stdClass {
 
 		if(is_array($arg) || $arg == false) {
 			// Array input (better on resources)
-			self::$select->columns = (!$arg) ? "*" : implode(', ', $arg);
+			self::$select->columns = (!$arg) ? "*" : '`' . implode('`, `', $arg) . '`';
 		} else {
-			// Infinite input
+			// Infinite comma delimited string input (uses more resources)
 			$args = func_get_args();
 			self::$select->columns = (is_array($args) && count($args) > 0) ? implode(', ', $args) : "*";
 		}
@@ -140,14 +141,19 @@ class db extends stdClass {
     
 	// Plain ol' query
 	public function query($str) {
-		return mysql_query($str, $this->conn);
+		if(is_object(self::$insert)) {
+			mysql_query($str, $this->conn);
+			return mysql_insert_id();
+		} else {
+			return mysql_query($str, $this->conn);
+		}
 	}
 
 	// Get columns from table (select only)
 	public function columns($args=false) {
 		if($args) {
 			$sql = "SHOW COLUMNS FROM " . (strstr($args, '`') ? $args : '`' . $args . '`');
-			return $this->assoc($sql);
+			return $this->obj($sql);
 		}
 		return false;
 	}
@@ -332,6 +338,32 @@ class db extends stdClass {
 			return self::$delete;
 		}
 	}
+	
+	// Join
+	public function join($table, $direction=false) {
+		if(self::$select->columns && self::$select->table && $table) {
+			self::$select->sql .= ($direction ? strtoupper($direction) : '') . " JOIN " . (strstr('`', $table) ? $table : "`$table`");
+			self::$select->join = ($direction ? strtoupper($direction) : '') . " JOIN " . (strstr('`', $table) ? $table : "`$table`");
+		} else {
+			$this->log .= "Error: Must have select columns, select table, and join table set for join()\n";
+		}
+		return self::$select;
+	}
+	
+	// On (required after join)
+	public function on($col1, $operand, $col2) {
+		if(self::$select->join) {
+			$col1array = explode('.', preg_replace('/`/', '', $col1));
+			$col2array = explode('.', preg_replace('/`/', '', $col2));
+			$col1 = '`' . $col1array[0] . '`.`' . $col1array[1] . '`';
+			$col2 = '`' . $col2array[0] . '`.`' . $col2array[1] . '`';
+			self::$select->sql .= " ON $col1 $operand $col2";
+			self::$select->join = " ON $col1 $operand $col2";
+		} else {
+			$this->log .= "Error: on() requires a join()\n";
+		}
+		return self::$select;
+	}
 
 	public function order($cols=false, $direction=false) {
 		if(self::$select->columns && self::$select->table) {
@@ -452,6 +484,16 @@ class db extends stdClass {
 		}
 	}
 
+// Global utility functions
+
+	// Return # of rows
+	public function rows() {
+		if(self::$select->columns && self::$select->table) {
+			$res = $this->query(self::$select->sql);
+			return mysql_num_rows($res);
+		}
+	}
+
 	// Check if a db exists
 	public function isdb($db) {
 		$dbresult = @mysql_query("SHOW DATABASES LIKE '$db'");
@@ -476,8 +518,6 @@ class db extends stdClass {
 		}
 	}
 
-// Global utility functions
-
 	// Run query and return associative array
 	public function assoc($str) {
 		$res = $this->query($str);
@@ -489,6 +529,7 @@ class db extends stdClass {
 		}
 		return $assoc;
 	}
+	// Run query and return array of objects
 	public function obj($str) {
 		$res = $this->query($str);
 		$obj = false;
