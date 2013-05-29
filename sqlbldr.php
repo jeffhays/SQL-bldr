@@ -46,9 +46,15 @@ class db extends stdClass {
 		} else {
 			// Infinite comma delimited string input (uses more resources)
 			$args = func_get_args();
-			self::$select->columns = (is_array($args) && count($args) > 0) ? implode(', ', $args) : "*";
+			self::$select->columns = (is_array($args) && count($args) > 0) ? '`' . implode('`, `', $args) . '`' : "*";
 		}
 		self::$select->sql = "SELECT " . self::$select->columns;
+		return self::$select;
+	}
+	
+	// Distinct
+	public function distinct() {
+		self::$select->sql = str_replace('SELECT', 'SELECT DISTINCT', self::$select->sql);
 		return self::$select;
 	}
 
@@ -141,11 +147,11 @@ class db extends stdClass {
     
 	// Plain ol' query
 	public function query($str) {
-		if(is_object(self::$insert)) {
+		if(is_object(self::$select)) {
+			return mysql_query($str, $this->conn);
+		} elseif(is_object(self::$insert)) {
 			mysql_query($str, $this->conn);
 			return mysql_insert_id();
-		} else {
-			return mysql_query($str, $this->conn);
 		}
 	}
 
@@ -389,7 +395,8 @@ class db extends stdClass {
 	// This function or execute() below are required after insert, update, and delete commands
 	public function run() {
 		if(is_object(self::$insert) && self::$insert->columns && self::$insert->values) {
-			return $this->query(self::$insert->sql);
+			mysql_query(self::$insert->sql, $this->conn);
+			return mysql_insert_id();
 		} else if(is_object(self::$update) && self::$update->columns) {
 			return $this->query(self::$update->sql);
 		} else if(is_object(self::$delete)) {
@@ -445,7 +452,7 @@ class db extends stdClass {
 		if(self::$select->table && self::$select->columns) {
 			// Initialize
 			$csv = '';
-			$fname = ($fname && strpos($fname, ".csv") === false) ? $fname .= ".csv" : 'output.csv';
+			$fname = ($fname && strpos($fname, ".csv") === false) ? $fname . ".csv" : 'output.csv';
 
 			// Execute current select SQL and set associative array
 			$res = $this->query(self::$select->sql);
@@ -483,6 +490,7 @@ class db extends stdClass {
 			$this->log .= "No table or columns selected\n";
 		}
 	}
+
 
 // Global utility functions
 
