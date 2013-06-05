@@ -23,21 +23,21 @@ class db extends stdClass {
 	private $order = false;
 	private $sql = false;
 
-	// Static instantiations
+	// Static instance
 	static $i;
 	
-	// Construct
-	public function __construct() {
-		$this->connect($this->dbhost, $this->dbuser, $this->dbpass, $this->db);
-		$this->table = $this->columns = $this->values = $this->where = $this->order = $this->sql = false;
-	}
-
 	// Setup or reset instance
 	public static function i(){
 		$c = __CLASS__;
 		self::$i = new $c;
 		
 		return self::$i;
+	}
+
+	// Construct
+	public function __construct() {
+		$this->connect($this->dbhost, $this->dbuser, $this->dbpass, $this->db);
+		$this->table = $this->columns = $this->values = $this->where = $this->order = $this->sql = false;
 	}
 
 	// Connect
@@ -490,6 +490,7 @@ class db extends stdClass {
 				return false;
 			}
 		}
+		return false;
 	}
 
 	// Run query and return associative array
