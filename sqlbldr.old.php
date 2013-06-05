@@ -14,7 +14,6 @@ class db extends stdClass {
 
 	// Private variables
 	private $conn;
-	private $querytype = false;
 	private $table = false;
 	private $columns = false;
 	private $values = false;
@@ -24,22 +23,81 @@ class db extends stdClass {
 	private $sql = false;
 
 	// Static instantiations
-	static $i;
+	static $select;
+	static $update;
+	static $insert;
+	static $delete;
 	
 	// Construct
 	public function __construct() {
 		$this->connect($this->dbhost, $this->dbuser, $this->dbpass, $this->db);
 		$this->table = $this->columns = $this->values = $this->where = $this->order = $this->sql = false;
 	}
-
-	// Setup or reset instance
-	public static function i(){
+	
+	// Select instance
+	public static function select($arg=false) {
+		// Setup or reset instance
 		$c = __CLASS__;
-		self::$i = new $c;
-		
-		return self::$i;
+		self::$select = new $c;
+
+		if(is_array($arg) || $arg == false) {
+			// Array input (better on resources)
+			self::$select->columns = (!$arg) ? "*" : '`' . implode('`, `', $arg) . '`';
+		} else {
+			// Infinite comma delimited string input (uses more resources)
+			$args = func_get_args();
+			self::$select->columns = (is_array($args) && count($args) > 0) ? '`' . implode('`, `', $args) . '`' : "*";
+		}
+		self::$select->sql = "SELECT " . self::$select->columns;
+		return self::$select;
+	}
+	
+	// Distinct
+	public function distinct() {
+		self::$select->sql = str_replace('SELECT', 'SELECT DISTINCT', self::$select->sql);
+		return self::$select;
 	}
 
+	// Update instance
+	public static function update($arg) {
+		// Setup or reset instance
+		$c = __CLASS__;
+		self::$update = new $c;
+
+		self::$update->table = "`$arg`";
+		self::$update->sql = "UPDATE " . self::$update->table;
+
+		return self::$update;
+	}
+
+	// Insert instance
+	public static function insert($table=false, $columns=false) {
+		// Setup or reset instance
+		$c = __CLASS__;
+		self::$insert = new $c;
+
+		if(is_array($columns) && count($columns) > 0) {
+			// Array of columns passed
+			self::$insert->table = $table;
+			self::$insert->columns = $columns;
+			self::$insert->sql = "INSERT INTO `" . self::$insert->table . "` (`" . implode("`,`", self::$insert->columns) . "`)";
+		} else {
+			// No columns passed (must be passing associative array in values())
+			self::$insert->table = $table;
+			self::$insert->sql = "INSERT INTO `" . self::$insert->table . "`";
+		}
+		return self::$insert;
+	}
+
+	// Delete instance
+	public static function delete($arg=false) {
+		$c = __CLASS__;
+		self::$delete = new $c;
+		self::$delete->table = $arg ? "`$arg`" : false;
+		self::$delete->sql = "DELETE FROM " . self::$delete->table;
+		return self::$delete;
+	}
+	
 	// Connect
 	public function connect($dbhost=false, $dbuser=false, $dbpass=false, $db=false) {
 		if(!$dbhost) $dbhost = $this->dbhost;
@@ -80,80 +138,24 @@ class db extends stdClass {
 			}
 			$this->log .= "Successfully selected database: $db\n";
 		}
-		if(self::$i->columns) {
-			return self::$i;
-		} else if(self::$i->columns) {
-			return self::$i;
+		if(self::$select->columns) {
+			return self::$select;
+		} else if(self::$insert->columns) {
+			return self::$insert;
 		}
-	}
-	
-	// Select
-	public function select($arg=false) {
-		self::$i->querytype = 'SELECT';
-		if(is_array($arg) || $arg == false) {
-			// Array input (better on resources)
-			self::$i->columns = (!$arg) ? "*" : '`' . implode('`, `', $arg) . '`';
-		} else {
-			// Infinite comma delimited string input (uses more resources)
-			$args = func_get_args();
-			self::$i->columns = (is_array($args) && count($args) > 0) ? '`' . implode('`, `', $args) . '`' : "*";
-		}
-		self::$i->sql = "SELECT " . self::$i->columns;
-		return self::$i;
-	}
-	
-	// Update
-	public function update($arg) {
-		self::$i->querytype = 'UPDATE';
-		self::$i->table = "`$arg`";
-		self::$i->sql = "UPDATE " . self::$i->table;
-
-		return self::$i;
-	}
-
-	// Insert
-	public function insert($table=false, $columns=false) {
-		self::$i->querytype = 'INSERT';
-		if(is_array($columns) && count($columns) > 0) {
-			// Array of columns passed
-			self::$i->table = $table;
-			self::$i->columns = $columns;
-			self::$i->sql = "INSERT INTO `" . self::$i->table . "` (`" . implode("`,`", self::$i->columns) . "`)";
-		} else {
-			// No columns passed (must be passing associative array in values())
-			self::$i->table = $table;
-			self::$i->sql = "INSERT INTO `" . self::$i->table . "`";
-		}
-		return self::$i;
-	}
-
-	// Delete
-	public function delete($arg=false) {
-		self::$i->querytype = 'DELETE';
-		self::$i->table = $arg ? "`$arg`" : false;
-		self::$i->sql = "DELETE FROM " . self::$i->table;
-		return self::$i;
 	}
     
-	// Query
-	public function query($str=false) {
-		if(is_object(self::$i) && self::$i->querytype == 'INSERT' && $str) {
-			// Insert
+	// Plain ol' query
+	public function query($str) {
+		if(is_object(self::$select)) {
+			return mysql_query($str, $this->conn);
+		} elseif(is_object(self::$insert)) {
 			mysql_query($str, $this->conn);
 			return mysql_insert_id();
-		} else if(is_object(self::$i) && self::$i->querytype && $str) {
-			// Everything else
-			return mysql_query($str, $this->conn);
 		}
 	}
 
-	// Distinct
-	public function distinct() {
-		self::$i->sql = str_replace('SELECT', 'SELECT DISTINCT', self::$i->sql);
-		return self::$i;
-	}
-
-	// Show columns from table
+	// Get columns from table (select only)
 	public function columns($args=false) {
 		if($args) {
 			$sql = "SHOW COLUMNS FROM " . (strstr($args, '`') ? $args : '`' . $args . '`');
@@ -164,62 +166,60 @@ class db extends stdClass {
 
 	// From tables (select only)
 	public function from($args=false, $moreargs=false) {
-		if(self::$i->querytype == 'SELECT' && self::$i->columns) {
+		if(self::$select->columns) {
 		  // Allow both array or comma delimited input (array uses less resources)
 		  if(!$moreargs && !is_array($args)) $args = array($args);
 			$args = $moreargs ? func_get_args() : $args;
-			self::$i->table = (is_array($args) && count($args) > 0) ? implode(', ', $args) : false;
-			self::$i->sql .= " FROM " . (strstr(self::$i->table, '`') ? self::$i->table : '`' . self::$i->table . '`');
+			self::$select->table = (is_array($args) && count($args) > 0) ? implode(', ', $args) : false;
+			self::$select->sql .= " FROM " . (strstr(self::$select->table, '`') ? self::$select->table : '`' . self::$select->table . '`');
 		}
-		return self::$i;
+		return self::$select;
 	}
 
-	// Set values (update only)
-	public function set($args=false) {
-		if(self::$i->querytype == 'UPDATE' && self::$i->table && is_array($args) && count($args) > 0) {
+	public function set($args) {
+		if(self::$update->table && is_array($args) && count($args) > 0) {
 			if(array_keys($args) !== range(0, count($args) - 1)) {
 				// Associative array passed with values
-				self::$i->sql .= ' SET';
+				self::$update->sql .= ' SET';
 				$c = '';
 				foreach($args as $k=>$val) {
 					$val = $this->sanitize($val);
-					self::$i->columns[] = $k;
-					self::$i->sql .= is_numeric($val) ? "$c `$k` = $val" : "$c `$k` = '$val'";
+					self::$update->columns[] = $k;
+					self::$update->sql .= is_numeric($val) ? "$c `$k` = $val" : "$c `$k` = '$val'";
 					$c = ',';
 				}
 			} else {
 				$this->log .= "Must use associative array in set() method.\n";
 			}
 		}
-		return self::$i;
+		return self::$update;
 	}
 
-	// Insert values (insert only)
 	public function values($args=false) {
-		if($args && self::$i->querytype == 'INSERT' && self::$i->table) {
+		if(self::$insert->table) {
 			// Insert
 			if(is_array($args)) {
 				// Array of values
 				if(array_keys($args) !== range(0, count($args) - 1)) {
 					// Associative array passed ('columnName' => 'value')
-					if(self::$i->columns) {
+					if(self::$insert->columns) {
 						$this->log .= "Error: Insert columns already set - don't pass columns in insert() when using associative array in values()\n";
 					} else {
 						// Set columns
-						self::$i->columns = array_keys($args);
-						self::$i->sql .= ' (`' . implode('`, `', self::$i->columns) . '`)';
+						self::$insert->columns = array_keys($args);
+						self::$insert->sql .= ' (`' . implode('`, `', self::$insert->columns) . '`)';
 					}
 				}
 				// Set values
-				self::$i->values = $this->sanitize(array_values($args));
-				self::$i->sql .= " VALUES ('" . implode("', '", self::$i->values) . "')";
+				self::$insert->values = $this->sanitize(array_values($args));
+				self::$insert->sql .= " VALUES ('" . implode("', '", self::$insert->values) . "')";
 			} else {
 				// Comma delimited list of values (slower)
 				$args = func_get_args();
-				self::$i->values = (is_array($args) && count($args) > 0) ? $this->sanitize($args) : false;
-				self::$i->sql .= " VALUES ('" . implode("', '", self::$i->values) . "')";
+				self::$insert->values = (is_array($args) && count($args) > 0) ? $this->sanitize($args) : false;
+				self::$insert->sql .= " VALUES ('" . implode("', '", self::$insert->values) . "')";
 			}
-			return self::$i;
+			return self::$insert;
 		}
 	}
 
@@ -228,7 +228,7 @@ class db extends stdClass {
 		$tmpwhere = $tmpsql = '';
 		if($str && $operand && $condition) {
 			// Start where
-			if(is_object(self::$i) || is_object(self::$i) || is_object(self::$i)) {
+			if(is_object(self::$select) || is_object(self::$update) || is_object(self::$delete)) {
 				$tmpwhere .= "WHERE `$str` $operand ";
 				$tmpsql .= " WHERE `$str` $operand ";
 				switch(strtoupper($operand)) {
@@ -261,9 +261,27 @@ class db extends stdClass {
 			}
 		}
 		// Return
-		self::$i->where = $tmpwhere;
-		self::$i->sql .= $tmpsql;
-		return self::$i;
+		if(is_object(self::$select)) {
+			// Select
+			self::$select->where = $tmpwhere;
+			self::$select->sql .= $tmpsql;
+			return self::$select;
+		} else if(is_object(self::$insert)) {
+			// Insert
+			self::$insert->where = $tmpwhere;
+			self::$insert->sql .= $tmpsql;
+			return self::$insert;
+		} else if(is_object(self::$update)) {
+			// Update
+			self::$update->where = $tmpwhere;
+			self::$update->sql .= $tmpsql;
+			return self::$update;
+		} else if(is_object(self::$delete)) {
+			// Delete
+			self::$delete->where = $tmpwhere;
+			self::$delete->sql .= $tmpsql;
+			return self::$delete;
+		}
 	}
 
 	public function andwhere($str=false, $operand=false, $condition=false) {
@@ -271,7 +289,7 @@ class db extends stdClass {
 		$tmpwhere = $tmpsql = '';
 		if($str && $operand && $condition) {
 			// Start where
-			if(is_object(self::$i) || is_object(self::$i) || is_object(self::$i)) {
+			if(is_object(self::$select) || is_object(self::$update) || is_object(self::$delete)) {
 				$tmpwhere .= "AND `$str` $operand ";
 				$tmpsql .= " AND `$str` $operand ";
 				switch(strtoupper($operand)) {
@@ -304,70 +322,86 @@ class db extends stdClass {
 			}
 		}
 		// Return
-		self::$i->where = $tmpwhere;
-		self::$i->sql .= $tmpsql;
-		return self::$i;
+		if(is_object(self::$select)) {
+			// Select
+			self::$select->where = $tmpwhere;
+			self::$select->sql .= $tmpsql;
+			return self::$select;
+		} else if(is_object(self::$insert)) {
+			// Insert
+			self::$insert->where = $tmpwhere;
+			self::$insert->sql .= $tmpsql;
+			return self::$insert;
+		} else if(is_object(self::$update)) {
+			// Update
+			self::$update->where = $tmpwhere;
+			self::$update->sql .= $tmpsql;
+			return self::$update;
+		} else if(is_object(self::$delete)) {
+			// Delete
+			self::$delete->where = $tmpwhere;
+			self::$delete->sql .= $tmpsql;
+			return self::$delete;
+		}
 	}
 	
 	// Join
 	public function join($table, $direction=false) {
-		if(self::$i->columns && self::$i->table && $table) {
-			self::$i->sql .= ($direction ? strtoupper($direction) : '') . " JOIN " . (strstr('`', $table) ? $table : "`$table`");
-			self::$i->join = ($direction ? strtoupper($direction) : '') . " JOIN " . (strstr('`', $table) ? $table : "`$table`");
+		if(self::$select->columns && self::$select->table && $table) {
+			self::$select->sql .= ($direction ? strtoupper($direction) : '') . " JOIN " . (strstr('`', $table) ? $table : "`$table`");
+			self::$select->join = ($direction ? strtoupper($direction) : '') . " JOIN " . (strstr('`', $table) ? $table : "`$table`");
 		} else {
 			$this->log .= "Error: Must have select columns, select table, and join table set for join()\n";
 		}
-		return self::$i;
+		return self::$select;
 	}
 	
 	// On (required after join)
 	public function on($col1, $operand, $col2) {
-		if(self::$i->join) {
+		if(self::$select->join) {
 			$col1array = explode('.', preg_replace('/`/', '', $col1));
 			$col2array = explode('.', preg_replace('/`/', '', $col2));
 			$col1 = '`' . $col1array[0] . '`.`' . $col1array[1] . '`';
 			$col2 = '`' . $col2array[0] . '`.`' . $col2array[1] . '`';
-			self::$i->sql .= " ON $col1 $operand $col2";
-			self::$i->join = " ON $col1 $operand $col2";
+			self::$select->sql .= " ON $col1 $operand $col2";
+			self::$select->join = " ON $col1 $operand $col2";
 		} else {
 			$this->log .= "Error: on() requires a join()\n";
 		}
-		return self::$i;
+		return self::$select;
 	}
-	
-	// Order
+
 	public function order($cols=false, $direction=false) {
-		if(self::$i->querytype == 'SELECT' && self::$i->columns && self::$i->table) {
+		if(self::$select->columns && self::$select->table) {
 			if(is_array($cols) && count($cols) > 0) {
-				self::$i->order = (strstr($cols[0], '`')) ? implode(', ', $cols) : '`' . implode('`, `', $cols) . '`';
+				self::$select->order = (strstr($cols[0], '`')) ? implode(', ', $cols) : '`' . implode('`, `', $cols) . '`';
 			}
-			self::$i->sql .= " ORDER BY " . self::$i->order . " " . (isset($direction) && strlen($direction) > 0 ? $direction : "ASC");
+			self::$select->sql .= " ORDER BY " . self::$select->order . " " . (isset($direction) && strlen($direction) > 0 ? $direction : "ASC");
 		}
-		return self::$i;
+		return self::$select;
+	}
+
+	// This function or run() below are required after insert, update, and delete commands
+	public function execute() {
+		if(is_object(self::$insert) && self::$insert->columns && self::$insert->values) {
+			return $this->query(self::$insert->sql);
+		} else if(is_object(self::$update) && self::$update->columns) {
+			return $this->query(self::$update->sql);
+		} else if(is_object(self::$delete)) {
+			return $this->query(self::$delete->sql);
+		} 
 	}
 
 	// This function or execute() below are required after insert, update, and delete commands
 	public function run() {
-		if(is_object(self::$i) && self::$i->querytype == 'INSERT' && self::$i->columns && self::$i->values) {
-			// Insert
-			mysql_query(self::$i->sql, $this->conn);
+		if(is_object(self::$insert) && self::$insert->columns && self::$insert->values) {
+			mysql_query(self::$insert->sql, $this->conn);
 			return mysql_insert_id();
-		} else if(is_object(self::$i) && self::$i->columns) {
-			// Other query types
-			return $this->query(self::$i->sql);
-		}
-	}
-
-	// This function is just an alias for the run() function above
-	public function execute() {
-		if(is_object(self::$i) && self::$i->querytype == 'INSERT' && self::$i->columns && self::$i->values) {
-			// Insert
-			mysql_query(self::$i->sql, $this->conn);
-			return mysql_insert_id();
-		} else if(is_object(self::$i) && self::$i->columns) {
-			// Other query types
-			return $this->query(self::$i->sql);
-		}
+		} else if(is_object(self::$update) && self::$update->columns) {
+			return $this->query(self::$update->sql);
+		} else if(is_object(self::$delete)) {
+			return $this->query(self::$delete->sql);
+		} 
 	}
 
 	// Function to clean SQL
@@ -385,8 +419,8 @@ class db extends stdClass {
 
 	// Export as object
 	public function asobject() {
-		if(self::$i->columns && self::$i->table) {
-			$res = $this->query(self::$i->sql);
+		if(self::$select->columns && self::$select->table) {
+			$res = $this->query(self::$select->sql);
 			$obj = false;
 			if($res && mysql_num_rows($res) > 0) {
 				while($row = mysql_fetch_object($res)) {
@@ -399,8 +433,8 @@ class db extends stdClass {
 
 	// Export as array
 	public function asarray() {
-		if(self::$i->columns && self::$i->table) {		
-			$res = $this->query(self::$i->sql);
+		if(self::$select->columns && self::$select->table) {		
+			$res = $this->query(self::$select->sql);
 			$assoc = false;
 			if($res && mysql_num_rows($res) > 0) {
 				while($row = mysql_fetch_assoc($res)) {
@@ -415,13 +449,13 @@ class db extends stdClass {
 
 	// Export as .csv (must run this in the header before any information is printed to the browser)
 	public function ascsv($fname=false) {
-		if(self::$i->table && self::$i->columns) {
+		if(self::$select->table && self::$select->columns) {
 			// Initialize
 			$csv = '';
 			$fname = ($fname && strpos($fname, ".csv") === false) ? $fname . ".csv" : 'output.csv';
 
 			// Execute current select SQL and set associative array
-			$res = $this->query(self::$i->sql);
+			$res = $this->query(self::$select->sql);
 			$assoc = false;
 			if($res && mysql_num_rows($res)>0) {
 				while($row = mysql_fetch_assoc($res)) {
@@ -462,8 +496,8 @@ class db extends stdClass {
 
 	// Return # of rows
 	public function rows() {
-		if(self::$i->querytype == 'SELECT' && self::$i->columns && self::$i->table) {
-			$res = $this->query(self::$i->sql);
+		if(self::$select->columns && self::$select->table) {
+			$res = $this->query(self::$select->sql);
 			return mysql_num_rows($res);
 		}
 	}
