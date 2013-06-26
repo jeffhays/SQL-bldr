@@ -141,7 +141,7 @@ class db extends stdClass {
 			// Insert
 			mysql_query($str, $this->conn);
 			return mysql_insert_id();
-		} else if(is_object(self::$i) && self::$i->querytype && $str) {
+		} else if(is_object(self::$i) && $str) {
 			// Everything else
 			return mysql_query($str, $this->conn);
 		}
@@ -352,7 +352,7 @@ class db extends stdClass {
 			// Insert
 			mysql_query(self::$i->sql, $this->conn);
 			return mysql_insert_id();
-		} else if(is_object(self::$i) && self::$i->columns) {
+		} else if(is_object(self::$i)) {
 			// Other query types
 			return $this->query(self::$i->sql);
 		}
@@ -364,7 +364,7 @@ class db extends stdClass {
 			// Insert
 			mysql_query(self::$i->sql, $this->conn);
 			return mysql_insert_id();
-		} else if(is_object(self::$i) && self::$i->columns) {
+		} else if(is_object(self::$i)) {
 			// Other query types
 			return $this->query(self::$i->sql);
 		}
