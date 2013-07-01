@@ -414,7 +414,7 @@ class db extends stdClass {
 	}
 
 	// Export as .csv (must run this in the header before any information is printed to the browser)
-	public function ascsv($fname=false) {
+	public function ascsv($fname=false, $heading=false) {
 		if(self::$i->table && self::$i->columns) {
 			// Initialize
 			$csv = '';
@@ -431,7 +431,8 @@ class db extends stdClass {
 
 			// Loop through results and build records and headings
 			if(is_array($assoc) && count($assoc) > 0) {
-				$heading = '"' . implode('","', array_keys($assoc[0])) . '"';
+				// Either set the heading to the column names or use whatever is passed in as $heading
+				$heading = !$heading ? '"' . implode('","', array_keys($assoc[0])) . '"' : '"' . implode('","', $heading) . '"';
 				foreach($assoc as $col=>$row) {
 					foreach($row as $key=>$val) {
 						$records[$col][] = $val;
