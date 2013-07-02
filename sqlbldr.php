@@ -114,6 +114,7 @@ class db extends stdClass {
 	// Insert
 	public function insert($table=false, $columns=false) {
 		self::$i->querytype = 'INSERT';
+		if(is_array(self::$i->columns)) self::$i->columns = false;
 		if(is_array($columns) && count($columns) > 0) {
 			// Array of columns passed
 			self::$i->table = $table;
