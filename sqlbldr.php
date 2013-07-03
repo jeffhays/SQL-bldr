@@ -502,6 +502,7 @@ class db extends stdClass {
 		}
 		return $assoc;
 	}
+
 	// Run query and return array of objects
 	public function obj($str) {
 		$res = $this->query($str);
