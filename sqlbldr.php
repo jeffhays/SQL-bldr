@@ -80,11 +80,7 @@ class db extends stdClass {
 			}
 			$this->log .= "Successfully selected database: $db\n";
 		}
-		if(self::$i->columns) {
-			return self::$i;
-		} else if(self::$i->columns) {
-			return self::$i;
-		}
+		return self::$i;
 	}
 	
 	// Select
