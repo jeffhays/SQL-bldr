@@ -80,7 +80,11 @@ class db extends stdClass {
 			}
 			$this->log .= "Successfully selected database: $db\n";
 		}
-		return self::$i;
+		if(self::$i->columns) {
+			return self::$i;
+		} else if(self::$i->columns) {
+			return self::$i;
+		}
 	}
 	
 	// Select
@@ -395,13 +399,14 @@ class db extends stdClass {
 	}
 
 	// Export as array
-	public function asarray() {
-		if(self::$i->columns && self::$i->table) {		
+	public function asarray($keys=true) {
+		if(self::$i->columns && self::$i->table) {
 			$res = $this->query(self::$i->sql);
 			$assoc = false;
 			if($res && mysql_num_rows($res) > 0) {
 				while($row = mysql_fetch_assoc($res)) {
-					$assoc[] = $row;
+					// Check to see if false is passed and there's only one column and return an array of values without keys, otherwise return the associative arrays as expected
+					$assoc[] = (!$keys && ((is_array(self::$i->columns) && count(self::$i->columns) == 1) || self::$i->columns != '*')) ? $row[preg_replace('/`/', '', self::$i->columns)] : $row;
 				}
 			}
 			return $assoc;
@@ -502,7 +507,6 @@ class db extends stdClass {
 		}
 		return $assoc;
 	}
-
 	// Run query and return array of objects
 	public function obj($str) {
 		$res = $this->query($str);
