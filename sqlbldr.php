@@ -340,7 +340,9 @@ class db extends stdClass {
 	public function order($cols=false, $direction=false) {
 		if(self::$i->querytype == 'SELECT' && self::$i->columns && self::$i->table) {
 			if(is_array($cols) && count($cols) > 0) {
-				self::$i->order = (strstr($cols[0], '`')) ? implode(', ', $cols) : '`' . implode('`, `', $cols) . '`';
+				self::$i->order = strstr($cols[0], '`') ? implode(', ', $cols) : '`' . implode('`, `', $cols) . '`';
+			} else if($cols) {
+				self::$i->order = !strstr($cols, ',') ? '`' . $cols . '`' : $cols;
 			}
 			self::$i->sql .= " ORDER BY " . self::$i->order . " " . (isset($direction) && strlen($direction) > 0 ? $direction : "ASC");
 		}
