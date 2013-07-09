@@ -305,7 +305,7 @@ class db extends stdClass {
 			}
 		}
 		// Return
-		self::$i->where = $tmpwhere;
+		self::$i->where .= ' ' . $tmpwhere;
 		self::$i->sql .= $tmpsql;
 		return self::$i;
 	}
