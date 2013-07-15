@@ -167,10 +167,13 @@ class db extends stdClass {
 	public function from($args=false, $moreargs=false) {
 		if(self::$i->querytype == 'SELECT' && self::$i->columns) {
 		  // Allow both array or comma delimited input (array uses less resources)
-		  if(!$moreargs && !is_array($args)) $args = array($args);
-			$args = $moreargs ? func_get_args() : $args;
-			self::$i->table = (is_array($args) && count($args) > 0) ? implode(', ', $args) : false;
-			self::$i->sql .= " FROM " . (strstr(self::$i->table, '`') ? self::$i->table : '`' . self::$i->table . '`');
+			if(is_array($args) && count($args) > 0) {
+				self::$i->table = '`' . implode('`, `', $args) . '`';
+				self::$i->sql .= " FROM `" . implode('`, `', $args) . "`";
+			} else {
+				self::$i->table = (strstr('`', $args) ? $args : "`$args`");
+				self::$i->sql .= " FROM " . (strstr('`', $args) ? $args : "`$args`");
+			}
 		}
 		return self::$i;
 	}
@@ -224,14 +227,15 @@ class db extends stdClass {
 		}
 	}
 
-	public function where($str=false, $operand=false, $condition=false) {
+	public function where($str=false, $operand=false, $condition=null) {
 		// Initialize temp variables for string building
 		$tmpwhere = $tmpsql = '';
-		if($str && $operand && $condition) {
+		if($str && $operand && $condition != null) {
+			$str = strstr($str, '`') ? $str : "`$str`";
 			// Start where
-			if(is_object(self::$i) || is_object(self::$i) || is_object(self::$i)) {
-				$tmpwhere .= "WHERE `$str` $operand ";
-				$tmpsql .= " WHERE `$str` $operand ";
+			if(is_object(self::$i)) {
+				$tmpwhere .= "WHERE $str $operand ";
+				$tmpsql .= " WHERE $str $operand ";
 				switch(strtoupper($operand)) {
 					case 'IN':
 					case 'NOT IN':
@@ -267,14 +271,15 @@ class db extends stdClass {
 		return self::$i;
 	}
 
-	public function andwhere($str=false, $operand=false, $condition=false) {
+	public function andwhere($str=false, $operand=false, $condition=null) {
 		// Initialize temp variables for string building
 		$tmpwhere = $tmpsql = '';
-		if($str && $operand && $condition) {
+		if($str && $operand && $condition != null) {
+			$str = strstr($str, '`') ? $str : "`$str`";
 			// Start where
-			if(is_object(self::$i) || is_object(self::$i) || is_object(self::$i)) {
-				$tmpwhere .= "AND `$str` $operand ";
-				$tmpsql .= " AND `$str` $operand ";
+			if(is_object(self::$i)) {
+				$tmpwhere .= "AND $str $operand ";
+				$tmpsql .= " AND $str $operand ";
 				switch(strtoupper($operand)) {
 					case 'IN':
 					case 'NOT IN':
@@ -378,7 +383,7 @@ class db extends stdClass {
 		if(is_array($args) && count($args) > 0) {
 			$sanitized = array();
 			foreach($args as $arg) {
-	  			$sanitized[] = mysql_real_escape_string($arg);
+  			$sanitized[] = mysql_real_escape_string($arg);
 			}
 		} else {
 			$sanitized = mysql_real_escape_string($args);
