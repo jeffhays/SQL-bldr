@@ -92,11 +92,15 @@ class db extends stdClass {
 		self::$i->querytype = 'SELECT';
 		if(is_array($arg) || $arg == false) {
 			// Array input (better on resources)
-			self::$i->columns = (!$arg) ? "*" : '`' . implode('`, `', $arg) . '`';
+			if($arg) {
+				self::$i->columns = array();
+				foreach($arg as $a) self::$i->columns[] = strstr('`', $a) ? $a : "`$a`";
+			} else {
+				self::$i->columns = '*';				
+			}
 		} else {
-			// Infinite comma delimited string input (uses more resources)
-			$args = func_get_args();
-			self::$i->columns = (is_array($args) && count($args) > 0) ? '`' . implode('`, `', $args) . '`' : "*";
+			// They passed a string so let's just use what they passed
+			self::$i->columns = $arg;
 		}
 		self::$i->sql = "SELECT " . self::$i->columns;
 		return self::$i;
