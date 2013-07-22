@@ -21,6 +21,7 @@ class db extends stdClass {
 	private $join = false;
 	private $where = false;
 	private $order = false;
+	private $limit = false;
 	private $sql = false;
 
 	// Static instance
@@ -356,6 +357,14 @@ class db extends stdClass {
 			self::$i->sql .= " ORDER BY " . self::$i->order . " " . (isset($direction) && strlen($direction) > 0 ? $direction : "ASC");
 		}
 		return self::$i;
+	}
+	
+	// Limit
+	public function limit($limit) {
+		if(self::$i->querytype == 'SELECT' && self::$i->columns && self::$i->table) {
+			self::$i->limit = $limit;
+			self::$i->sql .= " LIMIT $limit";
+		}
 	}
 
 	// This function or execute() below are required after insert, update, and delete commands
