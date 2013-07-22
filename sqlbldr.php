@@ -365,6 +365,7 @@ class db extends stdClass {
 			self::$i->limit = $limit;
 			self::$i->sql .= " LIMIT $limit";
 		}
+		return self::$i;
 	}
 
 	// This function or execute() below are required after insert, update, and delete commands
