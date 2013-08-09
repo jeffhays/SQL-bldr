@@ -484,6 +484,20 @@ class db extends stdClass {
 
 // Global utility functions
 
+	// Return first row (or # of passed index)
+	public function row($index=false) {
+		if(self::$i->columns && self::$i->table) {
+			$res = $this->query(self::$i->sql);
+			$obj = false;
+			if($res && mysql_num_rows($res) > 0) {
+				while($row = mysql_fetch_object($res)) {
+					$obj[] = $row;
+				}
+			}
+			return $obj[($index ? $index : 0)];
+		}
+	}
+
 	// Return # of rows
 	public function rows() {
 		if(self::$i->querytype == 'SELECT' && self::$i->columns && self::$i->table) {
@@ -517,6 +531,14 @@ class db extends stdClass {
 		return false;
 	}
 
+	// Debug method
+	public function debug($stuff=false, $die = false) {
+		echo '<pre>';
+		print_r($stuff ? $stuff : self::$i);
+		echo '</pre>';
+		if($die) die();
+	}
+
 	// Run query and return associative array
 	public function assoc($str) {
 		$res = $this->query($str);
@@ -528,6 +550,7 @@ class db extends stdClass {
 		}
 		return $assoc;
 	}
+	
 	// Run query and return array of objects
 	public function obj($str) {
 		$res = $this->query($str);
