@@ -23,18 +23,24 @@
 	// New PDO class testing
 	require_once('sqlbldr.pdo.php');
 
+	// Sub Query Example
 /*
-	// Basic select
 	$test = db::i()->select()->from('table1')
 					->where('name', 'LIKE', "jeffrey'")
 					->andwhere('ID', 'IN')
 					->open()
 						->select('ID')->from('othertable')->where('firstname', '=', 'jeff')
 					->close()
-					->debug();		
+					->debug();
 */
+	
+	$test = db::i()->select()->from('table1')->rows();
+	db::i()->debug($test);
 
+/*
+	// Export results as CSV
 	db::i()->select()->from('table1')->ascsv();
+*/
 
 /*
 		// Basic insert
