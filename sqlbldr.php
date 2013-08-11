@@ -320,6 +320,62 @@ class db extends stdClass {
 		return self::$i;
 	}
 	
+	public function orwhere($str=false, $operand=false, $condition=null) {
+		// Initialize temp variables for string building
+		$tmpwhere = $tmpsql = '';
+		if($str && $operand && $condition != null) {
+			$str = strstr($str, '`') ? $str : "`$str`";
+			// Start where
+			if(is_object(self::$i)) {
+				$tmpwhere .= "OR $str $operand ";
+				$tmpsql .= " OR $str $operand ";
+				switch(strtoupper($operand)) {
+					case 'IN':
+					case 'NOT IN':
+						// IN and NOT IN
+						if(is_array($condition)) {
+							$tmpwhere .= "(";
+							$tmpsql .= "(";
+							foreach($condition as $k=>$c) {
+								$tmpwhere .= (is_numeric($c) ? $c : "'" . $this->sanitize($c) . "'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'" . $this->sanitize($c) . "'") . ($k == count($condition) - 1 ? '' : ', ');
+							}
+							$tmpwhere .= ")";
+							$tmpsql .= ")";
+						}
+						break;
+					default:
+						// Other operators
+						$tmpwhere .= (is_numeric($condition) ? $condition : "'" . $this->sanitize($condition) . "'");
+						$tmpsql .= (is_numeric($condition) ? $condition : "'" . $this->sanitize($condition) . "'");
+						break;
+				}
+			}
+		} else if($str) {
+			// Literal string was passed in where()
+			if($this->columns && $this->table) {
+				$tmpwhere .= "OR $str";
+				$tmpsql .= " OR $str";
+			}
+		}
+		// Return
+		self::$i->where .= ' ' . $tmpwhere;
+		self::$i->sql .= $tmpsql;
+		return self::$i;
+	}
+	
+	// Open a ( in the query
+	public function open() {
+		self::$i->sql .= " (";
+		return self::$i;
+	}
+
+	// Close a ) in the query
+	public function close() {
+		self::$i->sql .= ")";
+		return self::$i;
+	}
+	
 	// Join
 	public function join($table, $direction=false) {
 		if(self::$i->columns && self::$i->table && $table) {
@@ -532,11 +588,11 @@ class db extends stdClass {
 	}
 
 	// Debug method
-	public function debug($stuff=false, $die = false) {
+	public function debug($stuff=false) {
 		echo '<pre>';
 		print_r($stuff ? $stuff : self::$i);
 		echo '</pre>';
-		if($die) die();
+		die();
 	}
 
 	// Run query and return associative array
