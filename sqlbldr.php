@@ -103,7 +103,7 @@ class db extends stdClass {
 			// They passed a string so let's just use what they passed
 			self::$i->columns = $arg;
 		}
-		self::$i->sql = "SELECT " . self::$i->columns;
+		self::$i->sql .= "SELECT " . self::$i->columns;
 		return self::$i;
 	}
 	
@@ -364,15 +364,28 @@ class db extends stdClass {
 		return self::$i;
 	}
 	
-	// Open a ( in the query
-	public function open() {
-		self::$i->sql .= " (";
+	// Add a ( in the query
+	public function open($type=false) {
+		switch(strtoupper(preg_replace('/ /', '', $type))) {
+			case 'AND':
+				self::$i->sql .= ' AND (';
+				break;
+			case 'OR':
+				self::$i->sql .= ' OR (';
+				break;
+			case 'IN':
+				self::$i->sql .= ' IN (';
+				break;
+			case 'NOTIN':
+				self::$i->sql .= ' NOT IN (';
+				break;
+		}
 		return self::$i;
 	}
 
-	// Close a ) in the query
+	// Add a ) in the query
 	public function close() {
-		self::$i->sql .= ")";
+		self::$i->sql .= ')';
 		return self::$i;
 	}
 	
@@ -588,11 +601,11 @@ class db extends stdClass {
 	}
 
 	// Debug method
-	public function debug($stuff=false) {
+	public function debug($stuff=false, $die=true) {
 		echo '<pre>';
 		print_r($stuff ? $stuff : self::$i);
 		echo '</pre>';
-		die();
+		if($die) die();
 	}
 
 	// Run query and return associative array
