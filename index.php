@@ -3,12 +3,14 @@
   ini_set('display_errors', 1);
 	require_once('sqlbldr.php');
 
-	$test = db::i()->select()->from('table1')
-					->where('something', '=', 'someval')
+	// Sub Query Example
+	$test = db::i()->select('ID')->from('table1')
+					->where('someguys', 'NOT LIKE', 'badguy%')
+					->andwhere('firstname', 'IN')
 					->open()
-						->select()->from('othertable')
+						->select('firstname')->from('othertable')
 						->where('badguys', '!=', 'goodguys')
 					->close()
-					->debug(false, false);
-					
-	$something = db::i()->select()->from('sg')->debug();
+					->debug();
+
+	

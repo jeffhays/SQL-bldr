@@ -101,7 +101,7 @@ class db extends stdClass {
 			}
 		} else {
 			// They passed a string so let's just use what they passed
-			self::$i->columns = $arg;
+			self::$i->columns = strstr('`', $arg) ? $arg : "`$arg`";
 		}
 		self::$i->sql .= "SELECT " . self::$i->columns;
 		return self::$i;
@@ -256,12 +256,25 @@ class db extends stdClass {
 							$tmpsql .= ")";
 						}
 						break;
+					case 'LIKE':
+					case 'NOT LIKE':
+						// LIKE and NOT LIKE
+						$tmpwhere .= strstr($condition, '%') ? "'" . $this->sanitize($condition) . "'" : "'%" . $this->sanitize($condition) . "%'";
+						$tmpsql .= strstr($condition, '%') ? "'" . $this->sanitize($condition) . "'" : "'%" . $this->sanitize($condition) . "%'";
+						break;
 					default:
 						// Other operators
 						$tmpwhere .= (is_numeric($condition) ? $condition : "'" . $this->sanitize($condition) . "'");
 						$tmpsql .= (is_numeric($condition) ? $condition : "'" . $this->sanitize($condition) . "'");
 						break;
 				}
+			}
+		} else if($str && $operand) {
+			// String and operand passed but no condition
+			$str = strstr($str, '`') ? $str : "`$str`";
+		if($this->columns && $this->table) {
+				$tmpwhere .= "WHERE $str $operand";
+				$tmpsql .= " WHERE $str $operand";
 			}
 		} else if($str) {
 			// Literal string was passed in where()
@@ -300,12 +313,25 @@ class db extends stdClass {
 							$tmpsql .= ")";
 						}
 						break;
+					case 'LIKE':
+					case 'NOT LIKE':
+						// LIKE and NOT LIKE
+						$tmpwhere .= strstr($condition, '%') ? "'" . $this->sanitize($condition) . "'" : "'%" . $this->sanitize($condition) . "%'";
+						$tmpsql .= strstr($condition, '%') ? "'" . $this->sanitize($condition) . "'" : "'%" . $this->sanitize($condition) . "%'";
+						break;
 					default:
 						// Other operators
 						$tmpwhere .= (is_numeric($condition) ? $condition : "'" . $this->sanitize($condition) . "'");
 						$tmpsql .= (is_numeric($condition) ? $condition : "'" . $this->sanitize($condition) . "'");
 						break;
 				}
+			}
+		} else if($str && $operand) {
+			// String and operand passed but no condition
+			$str = strstr($str, '`') ? $str : "`$str`";
+		if($this->columns && $this->table) {
+				$tmpwhere .= "AND $str $operand";
+				$tmpsql .= " AND $str $operand";
 			}
 		} else if($str) {
 			// Literal string was passed in where()
@@ -315,7 +341,7 @@ class db extends stdClass {
 			}
 		}
 		// Return
-		self::$i->where .= ' ' . $tmpwhere;
+		self::$i->where = $tmpwhere;
 		self::$i->sql .= $tmpsql;
 		return self::$i;
 	}
@@ -344,12 +370,25 @@ class db extends stdClass {
 							$tmpsql .= ")";
 						}
 						break;
+					case 'LIKE':
+					case 'NOT LIKE':
+						// LIKE and NOT LIKE
+						$tmpwhere .= strstr($condition, '%') ? "'" . $this->sanitize($condition) . "'" : "'%" . $this->sanitize($condition) . "%'";
+						$tmpsql .= strstr($condition, '%') ? "'" . $this->sanitize($condition) . "'" : "'%" . $this->sanitize($condition) . "%'";
+						break;
 					default:
 						// Other operators
 						$tmpwhere .= (is_numeric($condition) ? $condition : "'" . $this->sanitize($condition) . "'");
 						$tmpsql .= (is_numeric($condition) ? $condition : "'" . $this->sanitize($condition) . "'");
 						break;
 				}
+			}
+		} else if($str && $operand) {
+			// String and operand passed but no condition
+			$str = strstr($str, '`') ? $str : "`$str`";
+		if($this->columns && $this->table) {
+				$tmpwhere .= "OR $str $operand";
+				$tmpsql .= " OR $str $operand";
 			}
 		} else if($str) {
 			// Literal string was passed in where()
@@ -359,7 +398,7 @@ class db extends stdClass {
 			}
 		}
 		// Return
-		self::$i->where .= ' ' . $tmpwhere;
+		self::$i->where = $tmpwhere;
 		self::$i->sql .= $tmpsql;
 		return self::$i;
 	}
@@ -368,18 +407,19 @@ class db extends stdClass {
 	public function open($type=false) {
 		switch(strtoupper(preg_replace('/ /', '', $type))) {
 			case 'AND':
-				self::$i->sql .= ' AND (';
+				self::$i->sql .= ' AND';
 				break;
 			case 'OR':
-				self::$i->sql .= ' OR (';
+				self::$i->sql .= ' OR';
 				break;
 			case 'IN':
-				self::$i->sql .= ' IN (';
+				self::$i->sql .= ' IN';
 				break;
 			case 'NOTIN':
-				self::$i->sql .= ' NOT IN (';
+				self::$i->sql .= ' NOT IN';
 				break;
 		}
+		self::$i->sql .= ' (';
 		return self::$i;
 	}
 
