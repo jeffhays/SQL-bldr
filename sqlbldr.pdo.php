@@ -3,13 +3,12 @@ class db extends PDO {
 
 	// Default connection
   private $engine;
-  private $host;
-  private $database;
-  private $user;
-  private $pass;
+  private $host = 'localhost';
+  private $db = 'test';
+  private $user = 'root';
+  private $pass = 'root';
 
 	// Private variables
-	private $conn;
 	private $querytype = false;
 	private $table = false;
 	private $columns = false;
@@ -34,11 +33,7 @@ class db extends PDO {
 	// Constructor
   public function __construct($engine){
     $this->engine = $engine;
-    $this->host = 'localhost';
-    $this->database = 'test';
-    $this->user = 'root';
-    $this->pass = 'root';
-    $dns = $this->engine.':dbname='.$this->database.';host='.$this->host;
+    $dns = $this->engine.':dbname='.$this->db.';host='.$this->host;
     parent::__construct($dns, $this->user, $this->pass);
   }
 
@@ -150,7 +145,7 @@ class db extends PDO {
 				foreach($args as $k=>$val) {
 					$val = $this->sanitize($val);
 					self::$i->columns[] = $k;
-					self::$i->sql .= is_numeric($val) ? "$c `$k` = $val" : "$c `$k` = '$val'";
+					self::$i->sql .= "$c `$k` = $val";
 					$c = ',';
 				}
 			} else {
@@ -178,12 +173,12 @@ class db extends PDO {
 				}
 				// Set values
 				self::$i->values = $this->sanitize(array_values($args));
-				self::$i->sql .= " VALUES ('" . implode("', '", self::$i->values) . "')";
+				self::$i->sql .= " VALUES (" . implode(", ", self::$i->values) . ")";
 			} else {
 				// Comma delimited list of values (slower)
 				$args = func_get_args();
 				self::$i->values = (is_array($args) && count($args) > 0) ? $this->sanitize($args) : false;
-				self::$i->sql .= " VALUES ('" . implode("', '", self::$i->values) . "')";
+				self::$i->sql .= " VALUES (" . implode(", ", self::$i->values) . ")";
 			}
 			return self::$i;
 		}
@@ -444,29 +439,25 @@ class db extends PDO {
 		return is_object(self::$i) ? $this->query(self::$i->sql) : false;
 	}
 
-	// Function to clean SQL
-	public function sanitize($args) {
-		return $this->quote($args);
-	}
-
 	// Export as object
-	public function asobject() {
-		if(self::$i->columns && self::$i->table) {
-			$query = $this->prepare(self::$i->sql);
-			$query->execute();
-			$result = array();
-			while($row = $query->fetchObject())	$result[] = $row;
-			return $result;
-		}
+	public function asobject($sql=false) {
+		// Check if SQL is passed or if asobject() is being used as a chained method
+		$sql = $sql ? $sql : self::$i->sql;
+		// Check if SQL builder object is passed instead of string
+		$sql = is_object($sql) ? $sql->sql : $sql;
+		$query = $this->prepare($sql);
+		$query->execute();
+		$result = array();
+		while($row = $query->fetchObject())	$result[] = $row;
+		return $result;
 	}
 
 	// Export as array
-	public function asarray($keys=true) {
-		if(self::$i->columns && self::$i->table) {
-			$query = $this->prepare(self::$i->sql);
-			$query->execute();
-			return $query->fetchAll();
-		}
+	public function asarray($sql=false) {
+		$sql = $sql ? $sql : self::$i->sql;
+		$query = $this->prepare($sql);
+		$query->execute();
+		return $query->fetchAll(PDO::FETCH_ASSOC);
 	}
 
 	// Export as .csv (must run this in the header before any information is printed to the browser)
@@ -537,27 +528,16 @@ class db extends PDO {
 
 	// Check if a db exists
 	public function isdb($db) {
-		$dbresult = @mysql_query("SHOW DATABASES LIKE '$db'");
-		if($dbresult) {
-			if(mysql_num_rows($dbresult) == 1) {
-				return true;
-			} else {
-				return false;
-			}
-		}
+		$query = @$this->prepare("SHOW DATABASES LIKE '$db'");
+		$query->execute();
+		return $query->rowCount() == 1 ? true : false;
 	}
 
 	// Check if a table exists
 	public function istable($table) {
-		$dbtables = @mysql_query("SHOW TABLES FROM '{$this->db}' LIKE '{$table}'");
-		if($dbtables) {
-			if(mysql_num_rows($dbtables) == 1) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-		return false;
+		$query = @$this->prepare("SHOW TABLES FROM `{$this->db}` LIKE '$table'");
+		$query->execute();
+		return $query->rowCount() == 1 ? true : false;
 	}
 
 	// Debug method
@@ -567,28 +547,26 @@ class db extends PDO {
 		echo '</pre>';
 		if($die) die();
 	}
+	
+// Aliases
 
 	// Run query and return associative array
 	public function assoc($str) {
-		$res = $this->query($str);
-		$assoc = false;
-		if($res && mysql_num_rows($res)>0) {
-			while($row = mysql_fetch_assoc($res)) {
-				$assoc[] = $row;
-			}
-		}
-		return $assoc;
+		return $this->asarray($str);
 	}
 	
 	// Run query and return array of objects
 	public function obj($str) {
-		$res = $this->query($str);
-		$obj = false;
-		if($res && mysql_num_rows($res) > 0) {
-			while($row = mysql_fetch_object($res)) {
-				$obj[] = $row;
-			}
+		return $this->asobject($str);
+	}
+	
+	// Sanitize method
+	public function sanitize($in) {
+		if(is_array($in) && count($in)) {
+			foreach($in as $k => $v) $in[$k] = $this->quote($v);
+		} else {
+			return $this->quote($in);
 		}
-		return $obj;
+		return $in;
 	}
 }
