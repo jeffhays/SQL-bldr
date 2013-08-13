@@ -249,8 +249,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
@@ -314,8 +314,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
@@ -379,8 +379,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
