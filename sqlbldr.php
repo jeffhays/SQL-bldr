@@ -249,8 +249,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : $this->sanitize($c)) . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : $this->sanitize($c)) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
@@ -259,19 +259,21 @@ class db extends stdClass {
 					case 'LIKE':
 					case 'NOT LIKE':
 						// LIKE and NOT LIKE
-						$tmpwhere .= strstr($condition, '%') ? $this->sanitize($condition) : $this->sanitize("%".$condition."%");
-						$tmpsql .= strstr($condition, '%') ? $this->sanitize($condition) : $this->sanitize("%".$condition."%");
+						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
 						break;
 					default:
 						// Other operators
-						$condition = strstr($condition, '.') && strstr($condition, '`') ? explode('.', $condition) : $condition;
-						if(is_array($condition)){
-							$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
-							$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
-							$condition = implode('.', $condition);
+						if(strstr($condition, '`')){
+							$condition = strstr($condition, '.') ? explode('.', $condition) : $condition;
+							if(is_array($condition)){
+								$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
+								$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
+								$condition = implode('.', $condition);
+							}
 						}
-						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
-						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
 						break;
 				}
 			}
@@ -312,8 +314,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : $this->sanitize($c)) . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : $this->sanitize($c)) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
@@ -322,19 +324,21 @@ class db extends stdClass {
 					case 'LIKE':
 					case 'NOT LIKE':
 						// LIKE and NOT LIKE
-						$tmpwhere .= strstr($condition, '%') ? $this->sanitize($condition) : $this->sanitize("%".$condition."%");
-						$tmpsql .= strstr($condition, '%') ? $this->sanitize($condition) : $this->sanitize("%".$condition."%");
+						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
 						break;
 					default:
 						// Other operators
-						$condition = strstr($condition, '.') && strstr($condition, '`') ? explode('.', $condition) : $condition;
-						if(is_array($condition)){
-							$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
-							$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
-							$condition = implode('.', $condition);
+						if(strstr($condition, '`')){
+							$condition = strstr($condition, '.') ? explode('.', $condition) : $condition;
+							if(is_array($condition)){
+								$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
+								$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
+								$condition = implode('.', $condition);
+							}
 						}
-						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
-						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
 						break;
 				}
 			}
@@ -357,7 +361,7 @@ class db extends stdClass {
 		self::$i->sql .= $tmpsql;
 		return self::$i;
 	}
-	
+
 	public function orwhere($str=false, $operand=false, $condition=null) {
 		// Initialize temp variables for string building
 		$tmpwhere = $tmpsql = '';
@@ -375,8 +379,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : $this->sanitize($c)) . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : $this->sanitize($c)) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c))."'") . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
@@ -385,19 +389,21 @@ class db extends stdClass {
 					case 'LIKE':
 					case 'NOT LIKE':
 						// LIKE and NOT LIKE
-						$tmpwhere .= strstr($condition, '%') ? $this->sanitize($condition) : $this->sanitize("%".$condition."%");
-						$tmpsql .= strstr($condition, '%') ? $this->sanitize($condition) : $this->sanitize("%".$condition."%");
+						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
 						break;
 					default:
 						// Other operators
-						$condition = strstr($condition, '.') && strstr($condition, '`') ? explode('.', $condition) : $condition;
-						if(is_array($condition)){
-							$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
-							$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
-							$condition = implode('.', $condition);
+						if(strstr($condition, '`')){
+							$condition = strstr($condition, '.') ? explode('.', $condition) : $condition;
+							if(is_array($condition)){
+								$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
+								$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
+								$condition = implode('.', $condition);
+							}
 						}
-						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
-						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
 						break;
 				}
 			}
