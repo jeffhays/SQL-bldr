@@ -251,7 +251,7 @@ class db extends PDO {
 		return self::$i;
 	}
 
-	public function where($str=false, $operand=false, $condition=null) {
+	public function andwhere($str=false, $operand=false, $condition=null) {
 		// Initialize temp variables for string building
 		$tmpwhere = $tmpsql = '';
 		if($str && $operand && $condition != null) {
@@ -314,7 +314,7 @@ class db extends PDO {
 		return self::$i;
 	}
 	
-	public function where($str=false, $operand=false, $condition=null) {
+	public function orwhere($str=false, $operand=false, $condition=null) {
 		// Initialize temp variables for string building
 		$tmpwhere = $tmpsql = '';
 		if($str && $operand && $condition != null) {
