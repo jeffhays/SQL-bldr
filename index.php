@@ -4,6 +4,7 @@
 
 
 /*
+	// Old bldr class
 	require_once('sqlbldr.php');
 
 	// Sub Query Example
@@ -23,12 +24,14 @@
 	// New PDO class testing
 	require_once('sqlbldr.pdo.php');
 
-/*
 	// Basic SELECT
+/*
 	$test = db::i()->select()->from('table1')->asobject();
 	db::i()->debug($test);
+*/
 
 	// SELECT Sub Query Example
+/*
 	$test = db::i()->select()->from('table1')
 					->where('name', 'LIKE', "jeffrey'")
 					->andwhere('ID', 'IN')
@@ -36,7 +39,12 @@
 						->select('ID')->from('othertable')->where('firstname', '=', 'jeff')
 					->close()
 					->debug();
+*/
 
+	$test = db::i()->select()->from('table1')
+					->where('something', '=', 'jeff@email.net')->debug();
+
+/*
 	// Export results as CSV
 	db::i()->select()->from('table1')->ascsv();
 */

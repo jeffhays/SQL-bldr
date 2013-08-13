@@ -1,4 +1,8 @@
 <?php
+/*
+ *	Jeff Hays' BLDR class (now uses PDO!)
+ */
+
 class db extends PDO {
 
 	// Default connection
@@ -216,8 +220,14 @@ class db extends PDO {
 						break;
 					default:
 						// Other operators
-						$tmpwhere .= (is_numeric($condition) ? $condition : $this->sanitize($condition));
-						$tmpsql .= (is_numeric($condition) ? $condition : $this->sanitize($condition));
+						$condition = strstr($condition, '.') && strstr($condition, '`') ? explode('.', $condition) : $condition;
+						if(is_array($condition)){
+							$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
+							$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
+							$condition = implode('.', $condition);
+						}
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
 						break;
 				}
 			}
@@ -241,7 +251,7 @@ class db extends PDO {
 		return self::$i;
 	}
 
-	public function andwhere($str=false, $operand=false, $condition=null) {
+	public function where($str=false, $operand=false, $condition=null) {
 		// Initialize temp variables for string building
 		$tmpwhere = $tmpsql = '';
 		if($str && $operand && $condition != null) {
@@ -273,8 +283,14 @@ class db extends PDO {
 						break;
 					default:
 						// Other operators
-						$tmpwhere .= (is_numeric($condition) ? $condition : $this->sanitize($condition));
-						$tmpsql .= (is_numeric($condition) ? $condition : $this->sanitize($condition));
+						$condition = strstr($condition, '.') && strstr($condition, '`') ? explode('.', $condition) : $condition;
+						if(is_array($condition)){
+							$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
+							$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
+							$condition = implode('.', $condition);
+						}
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
 						break;
 				}
 			}
@@ -298,7 +314,7 @@ class db extends PDO {
 		return self::$i;
 	}
 	
-	public function orwhere($str=false, $operand=false, $condition=null) {
+	public function where($str=false, $operand=false, $condition=null) {
 		// Initialize temp variables for string building
 		$tmpwhere = $tmpsql = '';
 		if($str && $operand && $condition != null) {
@@ -330,8 +346,14 @@ class db extends PDO {
 						break;
 					default:
 						// Other operators
-						$tmpwhere .= (is_numeric($condition) ? $condition : $this->sanitize($condition));
-						$tmpsql .= (is_numeric($condition) ? $condition : $this->sanitize($condition));
+						$condition = strstr($condition, '.') && strstr($condition, '`') ? explode('.', $condition) : $condition;
+						if(is_array($condition)){
+							$condition[0] = strstr($condition[0], '`') ? $condition[0] : '`'.$condition[0].'`';
+							$condition[1] = strstr($condition[1], '`') ? $condition[1] : '`'.$condition[1].'`';
+							$condition = implode('.', $condition);
+						}
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : $this->sanitize($condition));
 						break;
 				}
 			}
