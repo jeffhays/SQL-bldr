@@ -25,10 +25,8 @@
 	require_once('sqlbldr.pdo.php');
 
 	// Basic SELECT
-/*
 	$test = db::i()->select()->from('table1')->asobject();
 	db::i()->debug($test);
-*/
 
 	// SELECT Sub Query Example
 /*
