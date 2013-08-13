@@ -272,8 +272,8 @@ class db extends stdClass {
 								$condition = implode('.', $condition);
 							}
 						}
-						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
-						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition)."'");
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition)."'");
 						break;
 				}
 			}
@@ -337,8 +337,8 @@ class db extends stdClass {
 								$condition = implode('.', $condition);
 							}
 						}
-						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
-						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition)."'");
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition)."'");
 						break;
 				}
 			}
@@ -402,8 +402,8 @@ class db extends stdClass {
 								$condition = implode('.', $condition);
 							}
 						}
-						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
-						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition))."'";
+						$tmpwhere .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition)."'");
+						$tmpsql .= (is_numeric($condition) || strstr($condition, '`') ? $condition : "'".$this->sanitize($condition)."'");
 						break;
 				}
 			}
