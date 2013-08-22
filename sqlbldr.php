@@ -249,8 +249,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'") . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
@@ -259,8 +259,8 @@ class db extends stdClass {
 					case 'LIKE':
 					case 'NOT LIKE':
 						// LIKE and NOT LIKE
-						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
-						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition)."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition)."'" : "'".$this->sanitize("%".$condition."%")."'";
 						break;
 					default:
 						// Other operators
@@ -280,16 +280,12 @@ class db extends stdClass {
 		} else if($str && $operand) {
 			// String and operand passed but no condition
 			$str = strstr($str, '`') ? $str : "`$str`";
-		if($this->columns && $this->table) {
-				$tmpwhere .= "WHERE $str $operand";
-				$tmpsql .= " WHERE $str $operand";
-			}
+			$tmpwhere .= "WHERE $str $operand";
+			$tmpsql .= " WHERE $str $operand";
 		} else if($str) {
 			// Literal string was passed in where()
-			if($this->columns && $this->table) {
-				$tmpwhere .= "WHERE $str";
-				$tmpsql .= " WHERE $str";
-			}
+			$tmpwhere .= "WHERE $str";
+			$tmpsql .= " WHERE $str";
 		}
 		// Return
 		self::$i->where = $tmpwhere;
@@ -314,8 +310,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'") . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
@@ -324,8 +320,8 @@ class db extends stdClass {
 					case 'LIKE':
 					case 'NOT LIKE':
 						// LIKE and NOT LIKE
-						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
-						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition)."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition)."'" : "'".$this->sanitize("%".$condition."%")."'";
 						break;
 					default:
 						// Other operators
@@ -345,13 +341,13 @@ class db extends stdClass {
 		} else if($str && $operand) {
 			// String and operand passed but no condition
 			$str = strstr($str, '`') ? $str : "`$str`";
-		if($this->columns && $this->table) {
+		if(self::$i->columns && self::$i->table) {
 				$tmpwhere .= "AND $str $operand";
 				$tmpsql .= " AND $str $operand";
 			}
 		} else if($str) {
 			// Literal string was passed in where()
-			if($this->columns && $this->table) {
+			if(self::$i->columns && self::$i->table) {
 				$tmpwhere .= "AND $str";
 				$tmpsql .= " AND $str";
 			}
@@ -379,8 +375,8 @@ class db extends stdClass {
 							$tmpwhere .= "(";
 							$tmpsql .= "(";
 							foreach($condition as $k=>$c) {
-								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
-								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'")) . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpwhere .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'") . ($k == count($condition) - 1 ? '' : ', ');
+								$tmpsql .= (is_numeric($c) ? $c : "'".$this->sanitize($c)."'") . ($k == count($condition) - 1 ? '' : ', ');
 							}
 							$tmpwhere .= ")";
 							$tmpsql .= ")";
@@ -389,8 +385,8 @@ class db extends stdClass {
 					case 'LIKE':
 					case 'NOT LIKE':
 						// LIKE and NOT LIKE
-						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
-						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition))."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpwhere .= strstr($condition, '%') ? "'".$this->sanitize($condition)."'" : "'".$this->sanitize("%".$condition."%")."'";
+						$tmpsql .= strstr($condition, '%') ? "'".$this->sanitize($condition)."'" : "'".$this->sanitize("%".$condition."%")."'";
 						break;
 					default:
 						// Other operators
@@ -410,13 +406,13 @@ class db extends stdClass {
 		} else if($str && $operand) {
 			// String and operand passed but no condition
 			$str = strstr($str, '`') ? $str : "`$str`";
-		if($this->columns && $this->table) {
+		if(self::$i->columns && self::$i->table) {
 				$tmpwhere .= "OR $str $operand";
 				$tmpsql .= " OR $str $operand";
 			}
 		} else if($str) {
 			// Literal string was passed in where()
-			if($this->columns && $this->table) {
+			if(self::$i->columns && self::$i->table) {
 				$tmpwhere .= "OR $str";
 				$tmpsql .= " OR $str";
 			}
@@ -485,7 +481,8 @@ class db extends stdClass {
 			if(is_array($cols) && count($cols) > 0) {
 				self::$i->order = strstr($cols[0], '`') ? implode(', ', $cols) : '`' . implode('`, `', $cols) . '`';
 			} else if($cols) {
-				self::$i->order = !strstr($cols, ',') ? '`' . $cols . '`' : $cols;
+				$cols = strstr($cols, '`') ? $cols : "`$cols`";
+				self::$i->order = $cols;
 			}
 			self::$i->sql .= " ORDER BY " . self::$i->order . " " . (isset($direction) && strlen($direction) > 0 ? $direction : "ASC");
 		}
