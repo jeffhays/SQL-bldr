@@ -7,6 +7,7 @@
 	require_once('sqlbldr.php');
 
 	// Sub Query Example
+/*
 	$test = db::i()->select('ID')->from('table1')
 					->where('someguys', 'NOT LIKE', 'badguy%')
 					->andwhere('firstname', 'IN')
@@ -16,7 +17,10 @@
 					->close()
 					->debug();	
 
+*/
 
+
+	db::i()->insert('blah')->values(array('col1' => null, 'farts' => 1, 'boobs' => 'floppy'))->debug();
 
 
 /*
