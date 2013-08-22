@@ -3,11 +3,11 @@
   ini_set('display_errors', 1);
 
 
+/*
 	// Old bldr class
 	require_once('sqlbldr.php');
 
 	// Sub Query Example
-/*
 	$test = db::i()->select('ID')->from('table1')
 					->where('someguys', 'NOT LIKE', 'badguy%')
 					->andwhere('firstname', 'IN')
@@ -20,13 +20,10 @@
 */
 
 
-	db::i()->insert('blah')->values(array('col1' => null, 'farts' => 1, 'boobs' => 'floppy'))->debug();
-
-
-/*
 	// New PDO class testing
 	require_once('sqlbldr.pdo.php');
 
+/*
 	// Basic SELECT
 	$test = db::i()->select()->from('table1')->asobject();
 	db::i()->debug($test);
@@ -45,12 +42,12 @@
 
 	// Export results as CSV
 	db::i()->select()->from('table1')->ascsv();
+*/
 	
 	// Basic INSERT
-	$id = db::i()->insert('table1')->values(array('name' => 'stupid', 'option' => 'fun value'))->run();
+	$id = db::i()->insert('table1')->values(array('name' => 'stupid', 'option' => 'fun value', 'blah' => 12))->debug();
 	db::i()->debug($id);
 	
 	// Basic UPDATE
 	db::i()->update('table1')->set(array('option' => 'newval'))->where('name', '=', 'jeffrey')->debug();
 	
-*/

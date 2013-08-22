@@ -166,7 +166,7 @@ class db extends PDO {
 			if(is_array($args)) {
 				// Array of values
 				if(array_keys($args) !== range(0, count($args) - 1)) {
-					// Associative array passed ('columnName' => 'value')
+					// Associaxtive array passed ('columnName' => 'value')
 					if(self::$i->columns) {
 						$this->log .= "Error: Insert columns already set - don't pass columns in insert() when using associative array in values()\n";
 					} else {
@@ -176,13 +176,23 @@ class db extends PDO {
 					}
 				}
 				// Set values
-				self::$i->values = $this->sanitize(array_values($args));
-				self::$i->sql .= " VALUES (" . implode(", ", self::$i->values) . ")";
+				$tmpvals = array_values($args);
+				// Initialiaze concatenated SQL
+				self::$i->sql .= " VALUES (";
+				// Loop through values to check for NULL
+				if(is_array($tmpvals) && count($tmpvals)){
+					foreach($tmpvals as $k=>$val){
+						// Crazy ternary to prep values with appropriate 'enclosing' or non-enclosing chars
+						self::$i->sql .= is_null($val) ? 'NULL' : (is_numeric($val) ? $val : "'" . $val . "'");
+						// Add commas as needed
+						if($k < count($tmpvals)-1) self::$i->sql .= ', ';
+					}
+				}
+				// Append closing ) to SQL
+				self::$i->sql .= ')';
+				self::$i->values = $tmpvals;
 			} else {
-				// Comma delimited list of values (slower)
-				$args = func_get_args();
-				self::$i->values = (is_array($args) && count($args) > 0) ? $this->sanitize($args) : false;
-				self::$i->sql .= " VALUES (" . implode(", ", self::$i->values) . ")";
+				$this->log .= "Error: Must use type array in values() method\n";
 			}
 			return self::$i;
 		}
