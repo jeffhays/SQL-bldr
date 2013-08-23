@@ -35,7 +35,7 @@ class db extends PDO {
 	}
 
 	// Constructor
-  public function __construct($engine){
+  public function __construct($engine='mysql'){
     $this->engine = $engine;
     $dns = $this->engine.':dbname='.$this->db.';host='.$this->host;
     parent::__construct($dns, $this->user, $this->pass);
@@ -445,8 +445,9 @@ class db extends PDO {
 			if(is_array($cols) && count($cols) > 0) {
 				self::$i->order = strstr($cols[0], '`') ? implode(', ', $cols) : '`' . implode('`, `', $cols) . '`';
 			} else if($cols) {
-				self::$i->order = !strstr($cols, ',') ? '`' . $cols . '`' : $cols;
-			}
+				// Note: Need to add check for . separator
+				$cols = strstr($cols, '`') ? $cols : "`$cols`";
+				self::$i->order = $cols;			}
 			self::$i->sql .= " ORDER BY " . self::$i->order . " " . (isset($direction) && strlen($direction) > 0 ? $direction : "ASC");
 		}
 		return self::$i;
