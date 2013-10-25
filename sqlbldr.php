@@ -103,7 +103,7 @@ class db extends stdClass {
 			// They passed a string so let's just use what they passed
 			self::$i->columns = strstr('`', $arg) ? $arg : "`$arg`";
 		}
-		self::$i->sql .= "SELECT " . self::$i->columns;
+		self::$i->sql .= "SELECT " . (is_array(self::$i->columns) ? implode(',', self::$i->columns) : self::$i->columns);
 		return self::$i;
 	}
 	
